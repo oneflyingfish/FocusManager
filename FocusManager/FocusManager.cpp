@@ -1,0 +1,426 @@
+﻿#include "FocusManager.h"
+
+FocusManager::FocusManager(QWidget *parent): QWidget(parent)
+{
+    this->setWindowTitle(tr("焦点管理工具"));
+    this->resize(420, 320);
+    this->installEventFilter(this);             // 安装事件管理器
+    this->configFilePath = QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+
+    // 初始化界面布局
+    this->initGUI();
+    this->connectSignalAndSlot();
+    
+    // 恢复配置文件
+    this->initConfiguration();
+
+}
+
+bool FocusManager::eventFilter(QObject* o, QEvent* e)
+{
+    if (o == this && e->type() == QEvent::WindowStateChange)
+    {
+        //窗口状态被改变的事件.
+        if (this->windowState() == Qt::WindowMinimized)
+        {
+            this->hide();
+            return true;
+        }
+    }
+    return QObject::eventFilter(o, e);
+}
+
+void FocusManager::setTrayIcon()
+{
+    //创建托盘图标
+    this->trayIcon->setIcon(QIcon("icon/program.ico"));
+    this->trayIcon->setToolTip(tr("焦点管理工具"));
+    this->trayIcon->show();
+
+    //创建监听行为
+    this->switchAction = new QAction(tr("启用"), this);
+    this->minimizeAction = new QAction(tr("最小化"), this);
+    this->restoreAction = new QAction(tr("还原"), this); 
+    this->quitAction = new QAction(tr("退出"), this); 
+
+    //创建右键弹出菜单
+    this->trayIconMenu = new QMenu(this);
+    this->trayIconMenu->addAction(switchAction);
+    this->trayIconMenu->addAction(minimizeAction);
+    this->trayIconMenu->addAction(restoreAction);
+    this->trayIconMenu->addSeparator();
+    this->trayIconMenu->addAction(quitAction);
+    this->trayIcon->setContextMenu(trayIconMenu);
+}
+
+void FocusManager::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason)
+    {
+    case QSystemTrayIcon::Trigger:
+        //单击托盘图标
+    case QSystemTrayIcon::DoubleClick:
+        //双击托盘图标
+        this->showNormal();
+        this->activateWindow();
+        break;
+    default:
+        break;
+    }
+}
+
+void FocusManager::connectSignalAndSlot()
+{
+    connect(this->lockFocusComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(lockFocusComboBoxActionChanged(QString)));
+    connect(this->switchFocusComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT(switchFocusComboBoxActionChanged(QString)));
+    connect(this->switchFocusShortcut, &QxtGlobalShortcut::activated, [=]() {this->switchFocus(); });
+    connect(this->lockFocusShortcut, &QxtGlobalShortcut::activated, [=]() {this->lockFocus(); });
+    connect(this->appOnRadioButton, SIGNAL(toggled(bool)), this, SLOT(flushSwitchAction(bool)));
+    // 添加托盘单/双击鼠标相应
+    connect(this->trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
+    connect(this->switchAction, SIGNAL(triggered()), this, SLOT(setAppStatus()));
+    connect(this->minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
+    connect(this->restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
+    connect(this->quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+}
+
+void FocusManager::setAppStatus()
+{
+    if (this->switchAction->text() == tr("启用"))
+    {
+        this->appOnRadioButton->setChecked(true);
+    }
+    else
+    {
+        this->appOffRadioButton->setChecked(true);
+    }
+}
+
+void FocusManager::flushSwitchAction(bool status)
+{
+    this->switchAction->setText(status ? tr("关闭") : tr("启用"));
+}
+
+void FocusManager::switchFocus()
+{
+    // 确保关闭时无效
+    if (this->appOffRadioButton->isChecked())
+    {
+        return;
+    }
+
+    qDebug() << "--switch Focus--";
+    HandleInfo handle= WindowsHandle::getCurrentSystemFocus();
+    if (handle.handleId == lockHandle.handleId)
+    {
+        if (currentHandle.handleId != 0)
+        {
+            // 切换回原来的句柄
+            WindowsHandle::setHandleFocus(currentHandle);
+        }
+    }
+    else
+    {
+        // 切换到锁定应用
+        if (lockHandle.handleId!=0)
+        {
+            this->currentHandle = handle;
+            WindowsHandle::setHandleFocus(lockHandle);
+            this->currentFocusOnProcessIdInfoLabel->setText(QString::number(currentHandle.processId));
+            this->currentFocusOnHandleInfoLabel->setText(QString::number(currentHandle.handleId));
+            this->currentFocusOnProgramNameInfoLabel->setText(currentHandle.processTitle);
+            this->currentFocusOnProgramPathInfoLineEdit->setText(currentHandle.processPath);
+        }
+        else
+        {
+            QMessageBox::information(this, tr("提示"), tr("请先绑定要切换的焦点应用"));
+        }
+    }
+
+}
+
+void FocusManager::lockFocus()
+{
+    // 确保关闭时无效
+    if (this->appOffRadioButton->isChecked())
+    {
+        return;
+    }
+
+    qDebug() << "--lock Focus--";
+    lockHandle = WindowsHandle::getCurrentSystemFocus();
+    this->lockFocusOnProcessIdInfoLabel->setText(QString::number(lockHandle.processId));
+    this->lockFocusOnHandleInfoLabel->setText(QString::number(lockHandle.handleId));
+    this->lockFocusOnProgramNameInfoLabel->setText(lockHandle.processTitle);
+    this->lockFocusOnProgramPathInfoLineEdit->setText(lockHandle.processPath);
+}
+
+void FocusManager::switchFocusComboBoxActionChanged(QString text)
+{
+    if (text.isEmpty() || text == "")
+    {
+        this->switchFocusShortcut->setShortcut(NULL);
+        return;
+    }
+
+    if (!this->switchFocusShortcut->setShortcut(QKeySequence(text)))
+    {
+        this->switchFocusComboBox->setCurrentIndex(0);
+        QMessageBox::information(this, "错误", QString("\"") + text + "\"被占用，请选择其它快捷键");
+        this->switchFocusShortcut->setDisabled();
+    }
+    this->switchFocusShortcut->setEnabled();
+
+}
+
+void FocusManager::lockFocusComboBoxActionChanged(QString text)
+{
+    if (text.isEmpty() || text == "")
+    {
+        this->lockFocusShortcut->setShortcut(NULL);
+        return;
+    }
+
+    if (!this->lockFocusShortcut->setShortcut(QKeySequence(text)))
+    {
+        this->lockFocusComboBox->setCurrentIndex(0);
+        QMessageBox::information(this, "错误", QString("\"") + text + "\"被其他程序占用，请选择其他快捷键");
+        this->lockFocusShortcut->setDisabled();
+    }
+    this->lockFocusShortcut->setEnabled();
+}
+
+void FocusManager::initGUI()
+{
+    this->activateWindow();     // 置顶显示
+    this->hide();               // 默认隐藏窗口
+
+    this->currentFocusOnProgramPathInfoLineEdit->setReadOnly(true);
+    this->lockFocusOnProgramPathInfoLineEdit->setReadOnly(true);
+
+    // 向快捷键组合框添加选项
+    for (int i = 0; i < 10; i++)
+    {
+        this->lockFocusComboBox->addItem(QString(""));
+        this->lockFocusComboBox->addItem(QString("Shift+")+QString::number(i));
+        this->lockFocusComboBox->addItem(QString("Alt+") + QString::number(i));
+        this->lockFocusComboBox->addItem(QString("Ctrl+") + QString::number(i));
+        this->lockFocusComboBox->addItem(QString("Ctrl+Shift+") + QString::number(i));
+        this->lockFocusComboBox->addItem(QString("Ctrl+Alt+") + QString::number(i));
+
+        this->switchFocusComboBox->addItem(QString(""));
+        this->switchFocusComboBox->addItem(QString("Shift+") + QString::number(i));
+        this->switchFocusComboBox->addItem(QString("Alt+") + QString::number(i));
+        this->switchFocusComboBox->addItem(QString("Ctrl+") + QString::number(i));
+        this->switchFocusComboBox->addItem(QString("Ctrl+Shift+") + QString::number(i));
+        this->switchFocusComboBox->addItem(QString("Ctrl+Alt+") + QString::number(i));
+    }
+
+    // 焦点绑定快捷键模块
+    this->lockFocusHBoxLayout->addWidget(this->lockFocusLabel,0);
+    this->lockFocusHBoxLayout->addWidget(this->lockFocusComboBox,1);
+
+    // 焦点切换快捷键模块
+    this->switchFocusHBoxLayout->addWidget(this->switchFocusLabel,0);
+    this->switchFocusHBoxLayout->addWidget(this->switchFocusComboBox,1);
+
+    // 绑定焦点信息模块
+    this->lockFocusOnProcessIdHboxLayout->addWidget(this->lockFocusOnProcessIdTipLabel);
+    this->lockFocusOnProcessIdHboxLayout->addWidget(this->lockFocusOnProcessIdInfoLabel);
+    this->lockFocusOnHandleHboxLayout->addWidget(this->lockFocusOnHandleTipLabel);
+    this->lockFocusOnHandleHboxLayout->addWidget(this->lockFocusOnHandleInfoLabel);
+    this->lockFocusOnProgramNameHboxLayout->addWidget(this->lockFocusOnProgramNameTipLabel);
+    this->lockFocusOnProgramNameHboxLayout->addWidget(this->lockFocusOnProgramNameInfoLabel);
+    this->lockFocusOnInfoHBboxLayout->addLayout(this->lockFocusOnProcessIdHboxLayout);
+    this->lockFocusOnInfoHBboxLayout->addLayout(this->lockFocusOnHandleHboxLayout);
+    this->lockFocusOnInfoHBboxLayout->addLayout(this->lockFocusOnProgramNameHboxLayout);
+    this->lockFocusOnProgramPathHboxLayout->addWidget(this->lockFocusOnProgramPathTipLabel);
+    this->lockFocusOnProgramPathHboxLayout->addWidget(this->lockFocusOnProgramPathInfoLineEdit);
+    this->lockFocusOnVBoxLayout->addLayout(this->lockFocusOnInfoHBboxLayout);
+    this->lockFocusOnVBoxLayout->addLayout(this->lockFocusOnProgramPathHboxLayout);
+    this->lockFocusOnProgramNameGroupBox->setLayout(this->lockFocusOnVBoxLayout);
+
+    // 当前焦点信息模块
+    this->currentFocusOnProcessIdHboxLayout->addWidget(this->currentFocusOnProcessIdTipLabel);
+    this->currentFocusOnProcessIdHboxLayout->addWidget(this->currentFocusOnProcessIdInfoLabel);
+    this->currentFocusOnHandleHboxLayout->addWidget(this->currentFocusOnHandleTipLabel);
+    this->currentFocusOnHandleHboxLayout->addWidget(this->currentFocusOnHandleInfoLabel);
+    this->currentFocusOnProgramNameHboxLayout->addWidget(this->currentFocusOnProgramNameTipLabel);
+    this->currentFocusOnProgramNameHboxLayout->addWidget(this->currentFocusOnProgramNameInfoLabel);
+    this->currentFocusOnInfoHBboxLayout->addLayout(this->currentFocusOnProcessIdHboxLayout);
+    this->currentFocusOnInfoHBboxLayout->addLayout(this->currentFocusOnHandleHboxLayout);
+    this->currentFocusOnInfoHBboxLayout->addLayout(this->currentFocusOnProgramNameHboxLayout);
+    this->currentFocusOnProgramPathHboxLayout->addWidget(this->currentFocusOnProgramPathTipLabel);
+    this->currentFocusOnProgramPathHboxLayout->addWidget(this->currentFocusOnProgramPathInfoLineEdit);
+    this->currentFocusOnVBoxLayout->addLayout(this->currentFocusOnInfoHBboxLayout);
+    this->currentFocusOnVBoxLayout->addLayout(this->currentFocusOnProgramPathHboxLayout);
+    this->currentFocusOnProgramNameGroupBox->setLayout(this->currentFocusOnVBoxLayout);
+
+    // 程序开关
+    this->appSwitchButtonGroup->addButton(this->appOnRadioButton);
+    this->appSwitchButtonGroup->addButton(this->appOffRadioButton);
+    this->appSwitchHBoxLayout->addStretch();
+    this->appSwitchHBoxLayout->addWidget(this->appOnRadioButton);
+    this->appSwitchHBoxLayout->addWidget(this->appOffRadioButton);
+    this->appOnRadioButton->setChecked(true);
+
+    // 整体垂直布局
+    this->mainBox->addLayout(this->lockFocusHBoxLayout,0);
+    this->mainBox->addLayout(this->switchFocusHBoxLayout,0);
+    this->mainBox->addWidget(this->lockFocusOnProgramNameGroupBox,1);
+    this->mainBox->addWidget(this->currentFocusOnProgramNameGroupBox,1);
+    this->mainBox->addLayout(this->appSwitchHBoxLayout);
+
+    // 设置间距
+    this->mainBox->setSpacing(15);
+
+    this->setLayout(this->mainBox);
+
+    this->setTrayIcon();        // 设置托盘
+}
+
+void FocusManager::initConfiguration()
+{
+    if (!this->configFilePath.exists("FocusManager"))
+    {
+        this->configFilePath.mkdir("FocusManager");
+    }
+
+    QFile file(this->configFilePath.absoluteFilePath("FocusManager/config.json"));              // 不存在会自动创建
+    if(!file.open(QIODevice::ReadWrite))
+    {
+        QMessageBox::information(this, tr("错误"), "配置文件无法打开");
+        return;
+    }
+
+    // 读取配置文件
+    QJsonParseError jsonError;
+    QJsonDocument jsonDoc(QJsonDocument::fromJson(file.readAll(), &jsonError));
+    file.close();
+    if (jsonError.error != QJsonParseError::NoError || jsonDoc.isEmpty())
+    {
+        // json格式错误或内容为空则重新生成
+        this->recordConfiguration();
+        return;
+    }
+
+    QJsonObject jsonObject = jsonDoc.object();
+    this->lockFocusComboBox->setCurrentText(jsonObject["lock_focus_shortcut"].toString());
+    this->switchFocusComboBox->setCurrentText(jsonObject["switch_focus_shortcut"].toString());
+    if (jsonObject["app_switch"].toBool())
+    {
+        this->appOnRadioButton->setChecked(true);
+        this->switchAction->setText(tr("关闭"));
+    }
+    else
+    {
+        this->appOffRadioButton->setChecked(true);
+        this->switchAction->setText("启用");
+    }
+}
+
+void FocusManager::recordConfiguration()
+{
+    QFile file(this->configFilePath.absoluteFilePath("FocusManager/config.json"));
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        QMessageBox::information(this, tr("错误"), "配置文件无法打开");
+        return;
+    }
+
+    // json格式错误，则生成
+    QJsonObject jsonObject;
+    jsonObject.insert(tr("lock_focus_shortcut"), this->lockFocusComboBox->currentText());
+    jsonObject.insert(tr("switch_focus_shortcut"), this->switchFocusComboBox->currentText());
+    jsonObject.insert(tr("app_switch"), this->appOnRadioButton->isChecked());
+
+    QJsonDocument jsonDoc;
+    jsonDoc.setObject(jsonObject);
+
+    file.write(jsonDoc.toJson());
+    file.close();
+    this->switchAction->setText(this->appOnRadioButton->isChecked()? tr("关闭"): tr("开启"));
+}
+
+
+FocusManager::~FocusManager()
+{
+    this->recordConfiguration();
+    
+    // 释放快捷键内存
+    switchFocusShortcut->deleteLater();
+    lockFocusShortcut->deleteLater();
+
+    /********************************
+    此处主要释放GUI控件所分配的内存
+    *********************************/
+
+    //释放trayIcon
+    trayIcon->deleteLater();
+    minimizeAction->deleteLater();
+    restoreAction->deleteLater();
+    quitAction->deleteLater();
+    trayIconMenu->deleteLater();
+
+    // 定义主体布局
+    mainBox->deleteLater();
+
+    // 定义绑定焦点快捷键
+    lockFocusHBoxLayout->deleteLater();
+    lockFocusLabel->deleteLater();
+    lockFocusComboBox->deleteLater();
+
+    // 定义焦点切换快捷键
+    switchFocusHBoxLayout->deleteLater();
+    switchFocusLabel->deleteLater();
+    switchFocusComboBox->deleteLater();
+
+    // 显示绑定焦点信息
+    lockFocusOnVBoxLayout->deleteLater();
+    lockFocusOnProgramNameGroupBox->deleteLater();
+    // 句柄号与进程名水平布局
+    lockFocusOnInfoHBboxLayout->deleteLater();
+    //显示进程号
+    lockFocusOnProcessIdHboxLayout->deleteLater();
+    lockFocusOnProcessIdTipLabel->deleteLater();
+    lockFocusOnProcessIdInfoLabel->deleteLater();
+    // 显示句柄号
+    lockFocusOnHandleHboxLayout->deleteLater();
+    lockFocusOnHandleTipLabel->deleteLater();
+    lockFocusOnHandleInfoLabel->deleteLater();
+    // 显示进程名
+    lockFocusOnProgramNameHboxLayout->deleteLater();
+    lockFocusOnProgramNameTipLabel->deleteLater();
+    lockFocusOnProgramNameInfoLabel->deleteLater();
+    // 显示进程进程
+    lockFocusOnProgramPathHboxLayout->deleteLater();
+    lockFocusOnProgramPathTipLabel->deleteLater();
+    lockFocusOnProgramPathInfoLineEdit->deleteLater();
+
+    // 显示当前焦点信息
+    currentFocusOnVBoxLayout->deleteLater();
+    currentFocusOnProgramNameGroupBox->deleteLater();
+    // 句柄号与进程名水平布局
+    currentFocusOnInfoHBboxLayout->deleteLater();
+    //显示进程号
+    currentFocusOnProcessIdHboxLayout->deleteLater();
+    currentFocusOnProcessIdTipLabel->deleteLater();
+    currentFocusOnProcessIdInfoLabel->deleteLater();
+    // 显示句柄号
+    currentFocusOnHandleHboxLayout->deleteLater();
+    currentFocusOnHandleTipLabel->deleteLater();
+    currentFocusOnHandleInfoLabel->deleteLater();
+    // 显示进程名
+    currentFocusOnProgramNameHboxLayout->deleteLater();
+    currentFocusOnProgramNameTipLabel->deleteLater();
+    currentFocusOnProgramNameInfoLabel->deleteLater();
+    // 显示进程进程
+    currentFocusOnProgramPathHboxLayout->deleteLater();
+    currentFocusOnProgramPathTipLabel->deleteLater();
+    currentFocusOnProgramPathInfoLineEdit->deleteLater();
+    // 程序开关
+    appSwitchButtonGroup->deleteLater();
+    appSwitchHBoxLayout->deleteLater();
+    appOnRadioButton->deleteLater();
+    appOffRadioButton->deleteLater();
+}
