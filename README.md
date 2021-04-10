@@ -3,7 +3,7 @@
 
 ## 开发环境：
 开发语言：`C++`  
-开发环境：`QT 5.14.2 、 Windows 10 + Visual Stdio 2019 Community` 
+开发环境：`QT 5.14.2 、 Windows 10 + Visual Stdio 2019 Community`   
 第三方库：`QxtGlobalShortcut`（支持全平台），代码已附含，暂仅在项目中引用windows相关 
 
 ## 适用平台：
