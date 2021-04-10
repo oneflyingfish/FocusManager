@@ -20,4 +20,4 @@
 * 此焦点管理工具：通过快捷键，可直接定位到特定应用的某个控件，且支持快速恢复切换前的窗口。但一次只能指定一个软件（可通过快捷键快速修改绑定）
 
 ## 二进制下载：
-* [windows安装包]()
+* [windows安装包](https://github.com/oneflyingfish/FocusManager/releases/tag/V1.0.0)
