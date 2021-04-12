@@ -18,7 +18,6 @@ HandleInfo WindowsHandle::getHandleInfoFromHWND(HWND m_hwnd)
 	DWORD idProcess;
 	::GetWindowThreadProcessId(m_hwnd, &idProcess);	// 通过进程句柄获取进程id
 
-	// 获取进程路径 参数1：进程ID 参数2：缓冲区指针，接收路径
 	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, idProcess);
 	if (hProcess == NULL)
 	{
