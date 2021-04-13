@@ -2,8 +2,9 @@
 
 FocusManager::FocusManager(QWidget *parent): QWidget(parent)
 {
-    this->setWindowTitle(tr("焦点管理工具"));
     this->resize(420, 320);
+    this->languageChineseRadioButton->setChecked(true);
+    this->autoRunCheckBox->setChecked(false);
     this->installEventFilter(this);             // 安装事件管理器
     this->configFilePath = QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
 
@@ -13,7 +14,36 @@ FocusManager::FocusManager(QWidget *parent): QWidget(parent)
     
     // 恢复配置文件
     this->initConfiguration();
+    this->flushUI();
+}
 
+void FocusManager::flushUI()
+{
+    this->setWindowTitle(tr("焦点管理工具"));
+    focusGroupBox->setTitle(tr("快捷键设置"));
+    lockFocusLabel->setText(tr("绑定焦点快捷键: "));
+    switchFocusLabel->setText(tr("切换焦点快捷键: "));
+    appSetGroupBox->setTitle(tr("软件设置"));
+    languageTipLabel->setText(tr("语言: "));
+    autoRunTipLabel->setText(tr("开机自启动: "));
+    lockFocusOnProgramNameGroupBox->setTitle(tr("绑定焦点信息"));
+    lockFocusOnProcessIdTipLabel->setText(tr("进程号: "));
+    lockFocusOnHandleTipLabel->setText(tr("句柄号: "));
+    lockFocusOnProgramNameTipLabel->setText(tr("应用标题: "));
+    lockFocusOnProgramPathTipLabel->setText(tr("程序路径: "));
+    currentFocusOnProgramNameGroupBox->setTitle(tr("当前焦点信息"));
+    currentFocusOnProcessIdTipLabel->setText(tr("进程号: "));
+    currentFocusOnHandleTipLabel->setText(tr("句柄号: "));
+    currentFocusOnProgramPathTipLabel->setText(tr("程序路径: "));
+    appOnRadioButton->setText(tr("启用"));
+    appOffRadioButton->setText(tr("关闭"));
+
+    switchAction->setText(this->appOnRadioButton->isChecked()?tr("关闭"):tr("开启"));
+    minimizeAction->setText(tr("最小化"));
+    restoreAction->setText(tr("还原"));
+    quitAction->setText(tr("退出"));
+    this->trayIcon->setToolTip(tr("焦点管理工具"));
+    this->resize(535, 355);
 }
 
 bool FocusManager::eventFilter(QObject* o, QEvent* e)
@@ -24,8 +54,24 @@ bool FocusManager::eventFilter(QObject* o, QEvent* e)
         if (this->windowState() == Qt::WindowMinimized)
         {
             this->hide();
+            this->trayIcon->show();
+            e->ignore();
             return true;
         }
+    }
+    else if (o == this && e->type() == QEvent::Close)
+    {
+        if (QMessageBox::question(this, tr("退出程序"), QString(tr("确认关闭程序，而非最小化到托盘？")), QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+        {
+            e->accept();  //介绍//程序退出
+        }
+        else
+        {
+            this->hide();
+            this->trayIcon->show();
+            e->ignore();
+        }
+        return true;
     }
     return QObject::eventFilter(o, e);
 }
@@ -33,7 +79,7 @@ bool FocusManager::eventFilter(QObject* o, QEvent* e)
 void FocusManager::setTrayIcon()
 {
     //创建托盘图标
-    this->trayIcon->setIcon(QIcon("icon/program.ico"));
+    this->trayIcon->setIcon(QIcon(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("icon/program.ico")));
     this->trayIcon->setToolTip(tr("焦点管理工具"));
     this->trayIcon->show();
 
@@ -76,17 +122,74 @@ void FocusManager::connectSignalAndSlot()
     connect(this->switchFocusShortcut, &QxtGlobalShortcut::activated, [=]() {this->switchFocus(); });
     connect(this->lockFocusShortcut, &QxtGlobalShortcut::activated, [=]() {this->lockFocus(); });
     connect(this->appOnRadioButton, SIGNAL(toggled(bool)), this, SLOT(flushSwitchAction(bool)));
+    connect(this->languageChineseRadioButton, SIGNAL(toggled(bool)), this, SLOT(setLanguageChinese(bool)));
+    connect(this->languageEnglishRadioButton, SIGNAL(toggled(bool)), this, SLOT(setLanguageEnglish(bool)));
     // 添加托盘单/双击鼠标相应
     connect(this->trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
     connect(this->switchAction, SIGNAL(triggered()), this, SLOT(setAppStatus()));
     connect(this->minimizeAction, SIGNAL(triggered()), this, SLOT(hide()));
     connect(this->restoreAction, SIGNAL(triggered()), this, SLOT(showNormal()));
     connect(this->quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+    // 开机自启动
+    connect(this->autoRunCheckBox, SIGNAL(stateChanged(int)), this, SLOT(autoRunConfig(int)));
+}
+
+void FocusManager::autoRunConfig(int state)
+{
+    if (state == Qt::CheckState::Unchecked)
+    {
+        this->setAutomaticSoftwareStartup(false);
+    }
+    else
+    {
+        this->setAutomaticSoftwareStartup(true);
+    }
+}
+
+// 设置自启动
+void FocusManager::setAutomaticSoftwareStartup(bool autoRun)
+{
+    //QSettings提供与操作系统无关的应用程序设置，windos下通常存储在注册表中
+    //QSettings::NativeFormat:使用最适合平台的存储格式存储设置。
+    QSettings reg("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
+    QString strAppPath = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
+    QString strAppName = QFileInfo(strAppPath).baseName();
+
+
+    if (autoRun)
+    {
+        reg.setValue(strAppName, strAppPath);//写入注册表，开机自启动
+    }
+    else
+    {
+        reg.remove(strAppName);//从注册表移除，关闭开机自启
+    }
+}
+
+void FocusManager::setLanguageEnglish(bool b)
+{
+    if (b)
+    {
+        translator.load("./Translation_Files/focusmanager_en.qm");
+        qApp->installTranslator(&translator);
+        this->flushUI();
+    }
+}
+
+void FocusManager::setLanguageChinese(bool b)
+{
+    if (b)
+    {
+        translator.load("./Translation_Files/focusmanager_zh.qm");
+        qApp->installTranslator(&translator);
+        this->flushUI();
+    }
 }
 
 void FocusManager::setAppStatus()
 {
-    if (this->switchAction->text() == tr("启用"))
+    if (this->switchAction->text() == tr("启用") || this->switchAction->text() == tr("Enable"))
     {
         this->appOnRadioButton->setChecked(true);
     }
@@ -99,6 +202,14 @@ void FocusManager::setAppStatus()
 void FocusManager::flushSwitchAction(bool status)
 {
     this->switchAction->setText(status ? tr("关闭") : tr("启用"));
+    if (status)
+    {
+        this->trayIcon->setIcon(QIcon("./icon/program.ico"));
+    }
+    else
+    {
+        this->trayIcon->setIcon(QIcon("./icon/program_down.ico"));
+    }
 }
 
 void FocusManager::switchFocus()
@@ -170,7 +281,6 @@ void FocusManager::switchFocusComboBoxActionChanged(QString text)
         this->switchFocusShortcut->setDisabled();
     }
     this->switchFocusShortcut->setEnabled();
-
 }
 
 void FocusManager::lockFocusComboBoxActionChanged(QString text)
@@ -217,12 +327,38 @@ void FocusManager::initGUI()
     }
 
     // 焦点绑定快捷键模块
-    this->lockFocusHBoxLayout->addWidget(this->lockFocusLabel,0);
-    this->lockFocusHBoxLayout->addWidget(this->lockFocusComboBox,1);
+    this->lockFocusHBoxLayout->addWidget(this->lockFocusLabel);
+    this->lockFocusHBoxLayout->addWidget(this->lockFocusComboBox);
 
     // 焦点切换快捷键模块
-    this->switchFocusHBoxLayout->addWidget(this->switchFocusLabel,0);
-    this->switchFocusHBoxLayout->addWidget(this->switchFocusComboBox,1);
+    this->switchFocusHBoxLayout->addWidget(this->switchFocusLabel);
+    this->switchFocusHBoxLayout->addWidget(this->switchFocusComboBox);
+
+    // 语言
+    this->languageButtonGroup->addButton(this->languageChineseRadioButton);
+    this->languageButtonGroup->addButton(this->languageEnglishRadioButton);
+    this->languageHBoxLayout->addWidget(this->languageTipLabel);
+    this->languageHBoxLayout->addWidget(this->languageChineseRadioButton);
+    this->languageHBoxLayout->addWidget(this->languageEnglishRadioButton);
+
+    // 开机自启动
+    this->autoRunHBoxLayout->addWidget(this->autoRunTipLabel);
+    this->autoRunHBoxLayout->addWidget(this->autoRunCheckBox);
+
+    // 快捷键模块
+    this->focusVBox->addLayout(this->lockFocusHBoxLayout);
+    this->focusVBox->addLayout(this->switchFocusHBoxLayout);
+    this->focusGroupBox->setLayout(this->focusVBox);
+
+    // 应用设置模块
+    this->appSetVBox->addLayout(this->languageHBoxLayout);
+    this->appSetVBox->addLayout(this->autoRunHBoxLayout);
+    this->appSetGroupBox->setLayout(this->appSetVBox);
+
+    // 顶部水平布局
+    this->topHbox->addWidget(this->focusGroupBox,2);
+    this->topHbox->addStretch();
+    this->topHbox->addWidget(this->appSetGroupBox,1);
 
     // 绑定焦点信息模块
     this->lockFocusOnProcessIdHboxLayout->addWidget(this->lockFocusOnProcessIdTipLabel);
@@ -265,17 +401,14 @@ void FocusManager::initGUI()
     this->appOnRadioButton->setChecked(true);
 
     // 整体垂直布局
-    this->mainBox->addLayout(this->lockFocusHBoxLayout,0);
-    this->mainBox->addLayout(this->switchFocusHBoxLayout,0);
-    this->mainBox->addWidget(this->lockFocusOnProgramNameGroupBox,1);
-    this->mainBox->addWidget(this->currentFocusOnProgramNameGroupBox,1);
+    this->mainBox->addLayout(this->topHbox);
+    this->mainBox->addWidget(this->lockFocusOnProgramNameGroupBox);
+    this->mainBox->addWidget(this->currentFocusOnProgramNameGroupBox);
     this->mainBox->addLayout(this->appSwitchHBoxLayout);
 
     // 设置间距
     this->mainBox->setSpacing(15);
-
     this->setLayout(this->mainBox);
-
     this->setTrayIcon();        // 设置托盘
 }
 
@@ -307,6 +440,25 @@ void FocusManager::initConfiguration()
     QJsonObject jsonObject = jsonDoc.object();
     this->lockFocusComboBox->setCurrentText(jsonObject["lock_focus_shortcut"].toString());
     this->switchFocusComboBox->setCurrentText(jsonObject["switch_focus_shortcut"].toString());
+    // 开机自启动
+    if (jsonObject["autoRun"].toBool())
+    {
+        this->autoRunCheckBox->setChecked(true);
+    }
+    else
+    {
+        this->autoRunCheckBox->setChecked(false);
+    }
+    // 切换中英文
+    if (jsonObject["language"].toString().toLower()=="english")
+    {
+        this->languageEnglishRadioButton->setChecked(true);
+    }
+    else
+    {
+        this->languageChineseRadioButton->setChecked(true);
+    }
+    // 应用开关
     if (jsonObject["app_switch"].toBool())
     {
         this->appOnRadioButton->setChecked(true);
@@ -333,6 +485,19 @@ void FocusManager::recordConfiguration()
     jsonObject.insert(tr("lock_focus_shortcut"), this->lockFocusComboBox->currentText());
     jsonObject.insert(tr("switch_focus_shortcut"), this->switchFocusComboBox->currentText());
     jsonObject.insert(tr("app_switch"), this->appOnRadioButton->isChecked());
+    if (this->languageChineseRadioButton->isChecked())
+    {
+        jsonObject.insert(tr("language"), tr("chinese"));
+    }
+    else if (this->languageEnglishRadioButton->isChecked())
+    {
+        jsonObject.insert(tr("language"), tr("english"));
+    }
+    else
+    {
+        jsonObject.insert(tr("language"), tr(""));
+    }
+    jsonObject.insert(tr("autoRun"), this->autoRunCheckBox->isChecked());
 
     QJsonDocument jsonDoc;
     jsonDoc.setObject(jsonObject);
@@ -364,6 +529,11 @@ FocusManager::~FocusManager()
 
     // 定义主体布局
     mainBox->deleteLater();
+    topHbox->deleteLater();
+
+    // 快捷键设置
+    focusGroupBox->deleteLater();
+    focusVBox->deleteLater();
 
     // 定义绑定焦点快捷键
     lockFocusHBoxLayout->deleteLater();
@@ -374,6 +544,22 @@ FocusManager::~FocusManager()
     switchFocusHBoxLayout->deleteLater();
     switchFocusLabel->deleteLater();
     switchFocusComboBox->deleteLater();
+
+    //定义设置功能按钮
+    appSetGroupBox->deleteLater();
+    appSetVBox->deleteLater();
+    // 语言设置
+    languageHBoxLayout->deleteLater();
+    languageTipLabel->deleteLater();
+    languageButtonGroup->deleteLater();
+    languageChineseRadioButton->deleteLater();
+    languageEnglishRadioButton->deleteLater();
+
+    // 开机自启动
+    autoRunHBoxLayout->deleteLater();
+    autoRunTipLabel->deleteLater();
+    autoRunCheckBox->deleteLater();
+
 
     // 显示绑定焦点信息
     lockFocusOnVBoxLayout->deleteLater();
