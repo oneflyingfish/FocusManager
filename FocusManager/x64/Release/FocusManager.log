@@ -1,1 +1,1 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppClean.targets(77,5): warning : 文件“f:\freework\visual_stdio_build\qt_c++\focusmanager\focusmanager\x64\release\rcc\qrc_focusmanager.cpp”正由另一进程使用，因此该进程无法访问此文件。
+﻿

@@ -127,7 +127,6 @@
   </ItemGroup>
   <ItemGroup>
     <QtTranslation Include="focusmanager_en.ts" />
-    <QtTranslation Include="focusmanager_zh.ts" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

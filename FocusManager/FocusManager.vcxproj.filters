@@ -105,9 +105,6 @@
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <QtTranslation Include="focusmanager_zh.ts">
-      <Filter>Translation Files</Filter>
-    </QtTranslation>
     <QtTranslation Include="focusmanager_en.ts">
       <Filter>Translation Files</Filter>
     </QtTranslation>

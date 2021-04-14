@@ -21,8 +21,8 @@ void FocusManager::flushUI()
 {
     this->setWindowTitle(tr("焦点管理工具"));
     focusGroupBox->setTitle(tr("快捷键设置"));
-    lockFocusLabel->setText(tr("绑定焦点快捷键: "));
-    switchFocusLabel->setText(tr("切换焦点快捷键: "));
+    lockFocusLabel->setText(tr("绑定焦点: "));
+    switchFocusLabel->setText(tr("切换焦点: "));
     appSetGroupBox->setTitle(tr("软件设置"));
     languageTipLabel->setText(tr("语言: "));
     autoRunTipLabel->setText(tr("开机自启动: "));
@@ -34,11 +34,12 @@ void FocusManager::flushUI()
     currentFocusOnProgramNameGroupBox->setTitle(tr("当前焦点信息"));
     currentFocusOnProcessIdTipLabel->setText(tr("进程号: "));
     currentFocusOnHandleTipLabel->setText(tr("句柄号: "));
+    currentFocusOnProgramNameTipLabel->setText(tr("应用标题: "));
     currentFocusOnProgramPathTipLabel->setText(tr("程序路径: "));
     appOnRadioButton->setText(tr("启用"));
-    appOffRadioButton->setText(tr("关闭"));
+    appOffRadioButton->setText(tr("禁用"));
 
-    switchAction->setText(this->appOnRadioButton->isChecked()?tr("关闭"):tr("开启"));
+    switchAction->setText(this->appOnRadioButton->isChecked()?tr("禁用"):tr("启用"));
     minimizeAction->setText(tr("最小化"));
     restoreAction->setText(tr("还原"));
     quitAction->setText(tr("退出"));
@@ -181,7 +182,7 @@ void FocusManager::setLanguageChinese(bool b)
 {
     if (b)
     {
-        translator.load("./Translation_Files/focusmanager_zh.qm");
+        translator.load(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("Translation_Files/focusmanager_zh.qm"));
         qApp->installTranslator(&translator);
         this->flushUI();
     }
@@ -189,6 +190,7 @@ void FocusManager::setLanguageChinese(bool b)
 
 void FocusManager::setAppStatus()
 {
+    qDebug() << this->switchAction->text() << endl;
     if (this->switchAction->text() == tr("启用") || this->switchAction->text() == tr("Enable"))
     {
         this->appOnRadioButton->setChecked(true);
@@ -201,14 +203,14 @@ void FocusManager::setAppStatus()
 
 void FocusManager::flushSwitchAction(bool status)
 {
-    this->switchAction->setText(status ? tr("关闭") : tr("启用"));
+    this->switchAction->setText(status ? tr("禁用") : tr("启用"));
     if (status)
     {
-        this->trayIcon->setIcon(QIcon("./icon/program.ico"));
+        this->trayIcon->setIcon(QIcon(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("icon/program.ico")));
     }
     else
     {
-        this->trayIcon->setIcon(QIcon("./icon/program_down.ico"));
+        this->trayIcon->setIcon(QIcon(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("icon/program_down.ico")));
     }
 }
 
@@ -308,7 +310,7 @@ void FocusManager::initGUI()
     this->currentFocusOnProgramPathInfoLineEdit->setReadOnly(true);
     this->lockFocusOnProgramPathInfoLineEdit->setReadOnly(true);
 
-    // 向快捷键组合框添加选项
+    // 向快捷键组合框添加选项 数字
     for (int i = 0; i < 10; i++)
     {
         this->lockFocusComboBox->addItem(QString(""));
@@ -326,13 +328,31 @@ void FocusManager::initGUI()
         this->switchFocusComboBox->addItem(QString("Ctrl+Alt+") + QString::number(i));
     }
 
+    // 向快捷键组合框添加选项 字母
+    for (int i = 'A'; i <= 'Z'; i++)
+    {
+        this->lockFocusComboBox->addItem(QString(""));
+        this->lockFocusComboBox->addItem(QString("Alt+") + QChar(i));
+        this->lockFocusComboBox->addItem(QString("Ctrl+") + QChar(i));
+        this->lockFocusComboBox->addItem(QString("Ctrl+Shift+") + QChar(i));
+        this->lockFocusComboBox->addItem(QString("Ctrl+Alt+") + QChar(i));
+
+        this->switchFocusComboBox->addItem(QString(""));
+        this->switchFocusComboBox->addItem(QString("Alt+") + QChar(i));
+        this->switchFocusComboBox->addItem(QString("Ctrl+") + QChar(i));
+        this->switchFocusComboBox->addItem(QString("Ctrl+Shift+") + QChar(i));
+        this->switchFocusComboBox->addItem(QString("Ctrl+Alt+") + QChar(i));
+    }
+
     // 焦点绑定快捷键模块
-    this->lockFocusHBoxLayout->addWidget(this->lockFocusLabel);
-    this->lockFocusHBoxLayout->addWidget(this->lockFocusComboBox);
+    this->lockFocusHBoxLayout->setSpacing(5);
+    this->lockFocusHBoxLayout->addWidget(this->lockFocusLabel,0);
+    this->lockFocusHBoxLayout->addWidget(this->lockFocusComboBox,1);
 
     // 焦点切换快捷键模块
-    this->switchFocusHBoxLayout->addWidget(this->switchFocusLabel);
-    this->switchFocusHBoxLayout->addWidget(this->switchFocusComboBox);
+    this->switchFocusHBoxLayout->setSpacing(5);
+    this->switchFocusHBoxLayout->addWidget(this->switchFocusLabel,0);
+    this->switchFocusHBoxLayout->addWidget(this->switchFocusComboBox,1);
 
     // 语言
     this->languageButtonGroup->addButton(this->languageChineseRadioButton);

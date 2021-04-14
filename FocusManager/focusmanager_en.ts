@@ -5,134 +5,138 @@
     <name>FocusManager</name>
     <message>
         <location filename="FocusManager.cpp" line="22"/>
-        <location filename="FocusManager.cpp" line="45"/>
-        <location filename="FocusManager.cpp" line="83"/>
+        <location filename="FocusManager.cpp" line="46"/>
+        <location filename="FocusManager.cpp" line="84"/>
         <source>焦点管理工具</source>
         <translation>Focus Manager</translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="64"/>
+        <location filename="FocusManager.cpp" line="65"/>
         <source>退出程序</source>
         <translation>exit</translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="64"/>
+        <location filename="FocusManager.cpp" line="65"/>
         <source>确认关闭程序，而非最小化到托盘？</source>
         <translation>Be sure to close the program and not minimize it to the pallet?</translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="38"/>
-        <location filename="FocusManager.cpp" line="87"/>
-        <location filename="FocusManager.cpp" line="192"/>
-        <location filename="FocusManager.cpp" line="204"/>
+        <location filename="FocusManager.cpp" line="39"/>
+        <location filename="FocusManager.cpp" line="42"/>
+        <location filename="FocusManager.cpp" line="88"/>
+        <location filename="FocusManager.cpp" line="194"/>
+        <location filename="FocusManager.cpp" line="206"/>
         <source>启用</source>
         <translation>Enable</translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="42"/>
-        <location filename="FocusManager.cpp" line="88"/>
+        <location filename="FocusManager.cpp" line="43"/>
+        <location filename="FocusManager.cpp" line="89"/>
         <source>最小化</source>
         <translation>minimize</translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="43"/>
-        <location filename="FocusManager.cpp" line="89"/>
+        <location filename="FocusManager.cpp" line="44"/>
+        <location filename="FocusManager.cpp" line="90"/>
         <source>还原</source>
         <translation>show normal</translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="44"/>
-        <location filename="FocusManager.cpp" line="90"/>
+        <location filename="FocusManager.cpp" line="45"/>
+        <location filename="FocusManager.cpp" line="91"/>
         <source>退出</source>
         <translation>Exit</translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="39"/>
-        <location filename="FocusManager.cpp" line="41"/>
-        <location filename="FocusManager.cpp" line="204"/>
-        <location filename="FocusManager.cpp" line="457"/>
-        <location filename="FocusManager.cpp" line="499"/>
+        <location filename="FocusManager.cpp" line="469"/>
+        <location filename="FocusManager.cpp" line="511"/>
         <source>关闭</source>
         <translation>Disable</translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="192"/>
+        <location filename="FocusManager.cpp" line="40"/>
+        <location filename="FocusManager.cpp" line="42"/>
+        <location filename="FocusManager.cpp" line="206"/>
+        <source>禁用</source>
+        <translation>Disable</translation>
+    </message>
+    <message>
+        <location filename="FocusManager.cpp" line="194"/>
         <source>Enable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="239"/>
+        <location filename="FocusManager.cpp" line="249"/>
         <source>提示</source>
         <translation>Tip</translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="239"/>
+        <location filename="FocusManager.cpp" line="249"/>
         <source>请先绑定要切换的焦点应用</source>
         <translation>Please bind the focus application you want to switch first</translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="417"/>
-        <location filename="FocusManager.cpp" line="471"/>
+        <location filename="FocusManager.cpp" line="429"/>
+        <location filename="FocusManager.cpp" line="483"/>
         <source>错误</source>
         <translation>error</translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="477"/>
+        <location filename="FocusManager.cpp" line="489"/>
         <source>lock_focus_shortcut</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="478"/>
+        <location filename="FocusManager.cpp" line="490"/>
         <source>switch_focus_shortcut</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="479"/>
+        <location filename="FocusManager.cpp" line="491"/>
         <source>app_switch</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="482"/>
-        <location filename="FocusManager.cpp" line="486"/>
-        <location filename="FocusManager.cpp" line="490"/>
+        <location filename="FocusManager.cpp" line="494"/>
+        <location filename="FocusManager.cpp" line="498"/>
+        <location filename="FocusManager.cpp" line="502"/>
         <source>language</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="482"/>
+        <location filename="FocusManager.cpp" line="494"/>
         <source>chinese</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="486"/>
+        <location filename="FocusManager.cpp" line="498"/>
         <source>english</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="492"/>
+        <location filename="FocusManager.cpp" line="504"/>
         <source>autoRun</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="FocusManager.cpp" line="41"/>
-        <location filename="FocusManager.cpp" line="499"/>
+        <location filename="FocusManager.cpp" line="511"/>
         <source>开启</source>
         <translation>Enable</translation>
     </message>
     <message>
         <location filename="FocusManager.cpp" line="23"/>
         <source>快捷键设置</source>
-        <translation>ShortCut Configuration</translation>
+        <translation>ShortCut Config</translation>
     </message>
     <message>
         <location filename="FocusManager.cpp" line="24"/>
-        <source>绑定焦点快捷键: </source>
-        <translation>Bind Focus ShortCut: </translation>
+        <source>绑定焦点: </source>
+        <translation>Bind   Focus: </translation>
     </message>
     <message>
         <location filename="FocusManager.cpp" line="25"/>
-        <source>切换焦点快捷键: </source>
-        <translation>Switch Focus ShortCut: </translation>
+        <source>切换焦点: </source>
+        <translation>Switch Focus: </translation>
     </message>
     <message>
         <location filename="FocusManager.cpp" line="26"/>
@@ -168,14 +172,15 @@
     </message>
     <message>
         <location filename="FocusManager.cpp" line="32"/>
+        <location filename="FocusManager.cpp" line="37"/>
         <source>应用标题: </source>
-        <translation>Program Title: </translation>
+        <translation>Title: </translation>
     </message>
     <message>
         <location filename="FocusManager.cpp" line="33"/>
-        <location filename="FocusManager.cpp" line="37"/>
+        <location filename="FocusManager.cpp" line="38"/>
         <source>程序路径: </source>
-        <translation>Executable File Path: </translation>
+        <translation>Path: </translation>
     </message>
     <message>
         <location filename="FocusManager.cpp" line="34"/>

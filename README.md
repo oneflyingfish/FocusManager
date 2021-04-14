@@ -7,7 +7,12 @@
 第三方库：`QxtGlobalShortcut`（支持全平台），代码已附含，暂仅在项目中引用windows相关 
 
 适用平台：`Windows Vista及以上`  
-注：通过替换`HandleInfo`和`WindowsHandle`中相关`Win 32 API`的调用，并修改对`QxtGlobalShortcut`库文件的引用，可以将应用适配为跨平台应用。  
+注：通过替换`HandleInfo`和`WindowsHandle`中相关`Win 32 API`的调用，并修改对`QxtGlobalShortcut`库文件的引用，可以将应用适配为跨平台应用。若要适配开机自启动，应考虑修改`FocusManager.cpp`中的注册表内容
+
+## 支持语言
+
+* 中文
+* English
 
 ## 应用举例
 * 对于两块屏幕的用户（屏幕上分别有应用A，B），可通过快捷键在A，B之间快速切换，而不用鼠标指定。 
