@@ -18,7 +18,7 @@ QString HandleInfo::TCharArrayToQString(TCHAR* tcharArray)
         char* chRtn = new char[iLen * sizeof(char)];
         WideCharToMultiByte(CP_ACP, 0, tcharArray, -1, chRtn, iLen, NULL, NULL);
         std::string str(chRtn);
-        delete chRtn;
+        delete[] chRtn;
         return QTextCodec::codecForLocale()->toUnicode((str).c_str());
     }
     else
