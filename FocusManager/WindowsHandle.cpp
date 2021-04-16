@@ -1,22 +1,24 @@
 ﻿#include "WindowsHandle.h"
 #include<QDebug>
 
-HandleInfo WindowsHandle::getHandleInfoFromHWND(HWND m_hwnd)
+
+
+HandleInfo WindowsHandle::getHandleInfoFromHWND(HWND handle)
 {
-	if (!m_hwnd)
+	if (!handle)
 	{
 		return HandleInfo();
 	}
 
 	// 获取标题
 	TCHAR focusAppTitle[200] = { 0 };
-	::GetWindowText(m_hwnd, focusAppTitle, 20);
+	::GetWindowText(handle, focusAppTitle, 20);
 
 	// 获取路径
 	TCHAR focusAppPath[MAX_PATH + 1] = { 0 };
 	TCHAR buffer[MAX_PATH + 1] = { 0 };
 	DWORD idProcess;
-	::GetWindowThreadProcessId(m_hwnd, &idProcess);	// 通过进程句柄获取进程id
+	::GetWindowThreadProcessId(handle, &idProcess);	// 通过进程句柄获取进程id
 
 	// 获取进程路径 参数1：进程ID 参数2：缓冲区指针，接收路径
 	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, idProcess);
@@ -43,14 +45,14 @@ HandleInfo WindowsHandle::getHandleInfoFromHWND(HWND m_hwnd)
 	CloseHandle(hProcess);
 
 
-	return HandleInfo(idProcess, m_hwnd, focusAppTitle, focusAppPath);
+	return HandleInfo(idProcess, handle, focusAppTitle, focusAppPath);
 }
 
 HandleInfo WindowsHandle::getCurrentSystemFocus()
 {
-    HWND m_hwnd = ::GetForegroundWindow();  // 获取当前焦点应用的句柄
+    HWND handle = ::GetForegroundWindow();  // 获取当前焦点应用的句柄
 
-	return getHandleInfoFromHWND(m_hwnd);
+	return getHandleInfoFromHWND(handle);
 }
 
 void WindowsHandle::setHandleFocus(HandleInfo handle)

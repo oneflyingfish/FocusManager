@@ -14,11 +14,11 @@ QString HandleInfo::TCharArrayToQString(TCHAR* tcharArray)
 {
     if (tcharArray)
     {
-        int iLen = WideCharToMultiByte(CP_ACP, 0, tcharArray, -1, NULL, 0, NULL, NULL);
-        char* chRtn = new char[iLen * sizeof(char)];
-        WideCharToMultiByte(CP_ACP, 0, tcharArray, -1, chRtn, iLen, NULL, NULL);
-        std::string str(chRtn);
-        delete[] chRtn;
+        int length = WideCharToMultiByte(CP_ACP, 0, tcharArray, -1, NULL, 0, NULL, NULL);
+        char* charArray = new char[length * sizeof(char)];
+        WideCharToMultiByte(CP_ACP, 0, tcharArray, -1, charArray, length, NULL, NULL);
+        std::string str(charArray);
+        delete[] charArray;
         return QTextCodec::codecForLocale()->toUnicode((str).c_str());
     }
     else

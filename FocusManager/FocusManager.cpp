@@ -2,10 +2,10 @@
 
 FocusManager::FocusManager(QWidget *parent): QWidget(parent)
 {
-    this->resize(420, 320);
-    this->languageChineseRadioButton->setChecked(true);
-    this->autoRunCheckBox->setChecked(false);
-    this->installEventFilter(this);             // 安装事件管理器
+    this->initObjects();
+    this->setDefaultValue();
+    // 安装事件管理器
+    this->installEventFilter(this);             
     this->configFilePath = QDir(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
 
     // 初始化界面布局
@@ -15,6 +15,103 @@ FocusManager::FocusManager(QWidget *parent): QWidget(parent)
     // 恢复配置文件
     this->initConfiguration();
     this->flushUI();
+}
+
+void FocusManager::initObjects()
+{
+    this->switchFocusShortcut = new QxtGlobalShortcut(this);
+    this->lockFocusShortcut = new QxtGlobalShortcut(this);
+
+    // 定义主体布局
+    this->mainBox = new QVBoxLayout();
+    this->topHbox = new QHBoxLayout();
+
+    // 快捷键设置
+    this->focusGroupBox = new QGroupBox();
+    this->focusVBox = new QVBoxLayout();
+    // 定义绑定焦点快捷键
+    this->lockFocusHBoxLayout = new QHBoxLayout();
+    this->lockFocusLabel = new QLabel();
+    this->lockFocusComboBox = new QComboBox();
+
+    // 定义焦点切换快捷键
+    this->switchFocusHBoxLayout = new QHBoxLayout();
+    this->switchFocusLabel = new QLabel();
+    this->switchFocusComboBox = new QComboBox();
+
+
+    //定义设置功能按钮
+    this->appSetGroupBox = new QGroupBox();
+    this->appSetVBox = new QVBoxLayout();
+    // 语言设置
+    this->languageHBoxLayout = new QHBoxLayout();
+    this->languageTipLabel = new QLabel();
+    this->languageButtonGroup = new QButtonGroup();
+    this->languageChineseRadioButton = new QRadioButton("中文");
+    this->languageEnglishRadioButton = new QRadioButton("English");
+
+    // 开机自启动
+    this->autoRunHBoxLayout = new QHBoxLayout();
+    this->autoRunTipLabel = new QLabel();
+    this->autoRunCheckBox = new QCheckBox();
+
+    // 显示绑定焦点信息
+    this->lockFocusOnVBoxLayout = new QVBoxLayout();
+    this->lockFocusOnProgramNameGroupBox = new QGroupBox();
+    // 句柄号与进程名水平布局
+    this->lockFocusOnInfoHBboxLayout = new QHBoxLayout();
+    //显示进程号
+    this->lockFocusOnProcessIdHboxLayout = new QHBoxLayout();
+    this->lockFocusOnProcessIdTipLabel = new QLabel();
+    this->lockFocusOnProcessIdInfoLabel = new QLabel();
+    // 显示句柄号
+    this->lockFocusOnHandleHboxLayout = new QHBoxLayout();
+    this->lockFocusOnHandleTipLabel = new QLabel();
+    this->lockFocusOnHandleInfoLabel = new QLabel();
+    // 显示进程名
+    this->lockFocusOnProgramNameHboxLayout = new QHBoxLayout();
+    this->lockFocusOnProgramNameTipLabel = new QLabel();
+    this->lockFocusOnProgramNameInfoLabel = new QLabel();
+    // 显示进程进程
+    this->lockFocusOnProgramPathHboxLayout = new QHBoxLayout();
+    this->lockFocusOnProgramPathTipLabel = new QLabel();
+    this->lockFocusOnProgramPathInfoLineEdit = new QLineEdit();
+
+
+    // 显示当前焦点信息
+    this->currentFocusOnVBoxLayout = new QVBoxLayout();
+    this->currentFocusOnProgramNameGroupBox = new QGroupBox();
+    // 句柄号与进程名水平布局
+    this->currentFocusOnInfoHBboxLayout = new QHBoxLayout();
+    //显示进程号
+    this->currentFocusOnProcessIdHboxLayout = new QHBoxLayout();
+    this->currentFocusOnProcessIdTipLabel = new QLabel();
+    this->currentFocusOnProcessIdInfoLabel = new QLabel();
+    // 显示句柄号
+    this->currentFocusOnHandleHboxLayout = new QHBoxLayout();
+    this->currentFocusOnHandleTipLabel = new QLabel();
+    this->currentFocusOnHandleInfoLabel = new QLabel();
+    // 显示进程名
+    this->currentFocusOnProgramNameHboxLayout = new QHBoxLayout();
+    this->currentFocusOnProgramNameTipLabel = new QLabel();
+    this->currentFocusOnProgramNameInfoLabel = new QLabel();
+    // 显示进程进程
+    this->currentFocusOnProgramPathHboxLayout = new QHBoxLayout();
+    this->currentFocusOnProgramPathTipLabel = new QLabel();
+    this->currentFocusOnProgramPathInfoLineEdit = new QLineEdit();
+
+    // 程序开关
+    this->appSwitchHBoxLayout = new QHBoxLayout();
+    this->appSwitchButtonGroup = new QButtonGroup();
+    this->appOnRadioButton = new QRadioButton();
+    this->appOffRadioButton = new QRadioButton();
+}
+
+void FocusManager::setDefaultValue()
+{
+    this->resize(420, 320);
+    this->languageChineseRadioButton->setChecked(true);
+    this->autoRunCheckBox->setChecked(false);
 }
 
 void FocusManager::flushUI()
@@ -172,7 +269,7 @@ void FocusManager::setLanguageEnglish(bool b)
 {
     if (b)
     {
-        translator.load("./Translation_Files/focusmanager_en.qm");
+        translator.load(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("Translation_Files/focusmanager_en.qm"));
         qApp->installTranslator(&translator);
         this->flushUI();
     }
@@ -182,8 +279,7 @@ void FocusManager::setLanguageChinese(bool b)
 {
     if (b)
     {
-        translator.load(QDir(QCoreApplication::applicationDirPath()).absoluteFilePath("Translation_Files/focusmanager_zh.qm"));
-        qApp->installTranslator(&translator);
+        qApp->removeTranslator(&translator);
         this->flushUI();
     }
 }
@@ -470,7 +566,7 @@ void FocusManager::initConfiguration()
         this->autoRunCheckBox->setChecked(false);
     }
     // 切换中英文
-    if (jsonObject["language"].toString().toLower()=="english")
+    if (jsonObject["language"].toString().toLower() == "english")
     {
         this->languageEnglishRadioButton->setChecked(true);
     }

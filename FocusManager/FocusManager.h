@@ -57,6 +57,7 @@ private slots:
 
 
 private:
+    void setDefaultValue();
     void setTrayIcon();
     void initGUI();                     // 初始化界面布局
     void initConfiguration();
@@ -66,11 +67,12 @@ private:
     void lockFocus();
     bool eventFilter(QObject* o, QEvent* e);
     void flushUI();
+    void initObjects();
     void setAutomaticSoftwareStartup(bool autoRun);
 
 private:
-    QxtGlobalShortcut* switchFocusShortcut = new QxtGlobalShortcut(this);
-    QxtGlobalShortcut* lockFocusShortcut = new QxtGlobalShortcut(this);
+    QxtGlobalShortcut* switchFocusShortcut = NULL;
+    QxtGlobalShortcut* lockFocusShortcut = NULL;
     QAction* switchAction;
     QAction* minimizeAction;
     QAction* restoreAction;
@@ -86,88 +88,88 @@ private:
 
 private:
     // 定义主体布局
-    QVBoxLayout* mainBox = new QVBoxLayout();
-    QHBoxLayout* topHbox = new QHBoxLayout();
+    QVBoxLayout* mainBox = NULL;
+    QHBoxLayout* topHbox = NULL;
 
     // 快捷键设置
-    QGroupBox* focusGroupBox = new QGroupBox();
-    QVBoxLayout* focusVBox = new QVBoxLayout();
+    QGroupBox* focusGroupBox = NULL;
+    QVBoxLayout* focusVBox = NULL;
     // 定义绑定焦点快捷键
-    QHBoxLayout* lockFocusHBoxLayout = new QHBoxLayout();
-    QLabel* lockFocusLabel = new QLabel();
-    QComboBox* lockFocusComboBox = new QComboBox();
+    QHBoxLayout* lockFocusHBoxLayout = NULL;
+    QLabel* lockFocusLabel = NULL;
+    QComboBox* lockFocusComboBox = NULL;
 
     // 定义焦点切换快捷键
-    QHBoxLayout* switchFocusHBoxLayout = new QHBoxLayout();
-    QLabel* switchFocusLabel = new QLabel();
-    QComboBox* switchFocusComboBox = new QComboBox();
+    QHBoxLayout* switchFocusHBoxLayout = NULL;
+    QLabel* switchFocusLabel = NULL;
+    QComboBox* switchFocusComboBox = NULL;
 
 
     //定义设置功能按钮
-    QGroupBox* appSetGroupBox = new QGroupBox();
-    QVBoxLayout* appSetVBox = new QVBoxLayout();
+    QGroupBox* appSetGroupBox = NULL;
+    QVBoxLayout* appSetVBox = NULL;
     // 语言设置
-    QHBoxLayout* languageHBoxLayout = new QHBoxLayout();
-    QLabel* languageTipLabel = new QLabel();
-    QButtonGroup* languageButtonGroup = new QButtonGroup();
-    QRadioButton* languageChineseRadioButton = new QRadioButton("中文");
-    QRadioButton* languageEnglishRadioButton = new QRadioButton("English");
+    QHBoxLayout* languageHBoxLayout = NULL;
+    QLabel* languageTipLabel = NULL;
+    QButtonGroup* languageButtonGroup = NULL;
+    QRadioButton* languageChineseRadioButton = NULL;
+    QRadioButton* languageEnglishRadioButton = NULL;
 
     // 开机自启动
-    QHBoxLayout* autoRunHBoxLayout = new QHBoxLayout();
-    QLabel* autoRunTipLabel = new QLabel();
-    QCheckBox* autoRunCheckBox = new QCheckBox();
+    QHBoxLayout* autoRunHBoxLayout = NULL;
+    QLabel* autoRunTipLabel = NULL;
+    QCheckBox* autoRunCheckBox = NULL;
 
     // 显示绑定焦点信息
-    QVBoxLayout* lockFocusOnVBoxLayout = new QVBoxLayout();
-    QGroupBox* lockFocusOnProgramNameGroupBox = new QGroupBox();
+    QVBoxLayout* lockFocusOnVBoxLayout = NULL;
+    QGroupBox* lockFocusOnProgramNameGroupBox = NULL;
     // 句柄号与进程名水平布局
-    QHBoxLayout* lockFocusOnInfoHBboxLayout = new QHBoxLayout();
+    QHBoxLayout* lockFocusOnInfoHBboxLayout = NULL;
     //显示进程号
-    QHBoxLayout* lockFocusOnProcessIdHboxLayout = new QHBoxLayout();
-    QLabel* lockFocusOnProcessIdTipLabel = new QLabel();
-    QLabel* lockFocusOnProcessIdInfoLabel = new QLabel();
+    QHBoxLayout* lockFocusOnProcessIdHboxLayout = NULL;
+    QLabel* lockFocusOnProcessIdTipLabel = NULL;
+    QLabel* lockFocusOnProcessIdInfoLabel = NULL;
     // 显示句柄号
-    QHBoxLayout* lockFocusOnHandleHboxLayout = new QHBoxLayout();
-    QLabel* lockFocusOnHandleTipLabel = new QLabel();
-    QLabel* lockFocusOnHandleInfoLabel = new QLabel();
+    QHBoxLayout* lockFocusOnHandleHboxLayout = NULL;
+    QLabel* lockFocusOnHandleTipLabel = NULL;
+    QLabel* lockFocusOnHandleInfoLabel = NULL;
     // 显示进程名
-    QHBoxLayout* lockFocusOnProgramNameHboxLayout = new QHBoxLayout();
-    QLabel* lockFocusOnProgramNameTipLabel = new QLabel();
-    QLabel* lockFocusOnProgramNameInfoLabel = new QLabel();
+    QHBoxLayout* lockFocusOnProgramNameHboxLayout = NULL;
+    QLabel* lockFocusOnProgramNameTipLabel = NULL;
+    QLabel* lockFocusOnProgramNameInfoLabel = NULL;
     // 显示进程进程
-    QHBoxLayout* lockFocusOnProgramPathHboxLayout = new QHBoxLayout();
-    QLabel* lockFocusOnProgramPathTipLabel = new QLabel();
-    QLineEdit* lockFocusOnProgramPathInfoLineEdit = new QLineEdit();
+    QHBoxLayout* lockFocusOnProgramPathHboxLayout = NULL;
+    QLabel* lockFocusOnProgramPathTipLabel = NULL;
+    QLineEdit* lockFocusOnProgramPathInfoLineEdit = NULL;
 
 
     // 显示当前焦点信息
-    QVBoxLayout* currentFocusOnVBoxLayout = new QVBoxLayout();
-    QGroupBox* currentFocusOnProgramNameGroupBox = new QGroupBox();
+    QVBoxLayout* currentFocusOnVBoxLayout = NULL;
+    QGroupBox* currentFocusOnProgramNameGroupBox = NULL;
     // 句柄号与进程名水平布局
-    QHBoxLayout* currentFocusOnInfoHBboxLayout = new QHBoxLayout();
+    QHBoxLayout* currentFocusOnInfoHBboxLayout = NULL;
     //显示进程号
-    QHBoxLayout* currentFocusOnProcessIdHboxLayout = new QHBoxLayout();
-    QLabel* currentFocusOnProcessIdTipLabel = new QLabel();
-    QLabel* currentFocusOnProcessIdInfoLabel = new QLabel();
+    QHBoxLayout* currentFocusOnProcessIdHboxLayout = NULL;
+    QLabel* currentFocusOnProcessIdTipLabel = NULL;
+    QLabel* currentFocusOnProcessIdInfoLabel = NULL;
     // 显示句柄号
-    QHBoxLayout* currentFocusOnHandleHboxLayout = new QHBoxLayout();
-    QLabel* currentFocusOnHandleTipLabel = new QLabel();
-    QLabel* currentFocusOnHandleInfoLabel = new QLabel();
+    QHBoxLayout* currentFocusOnHandleHboxLayout = NULL;
+    QLabel* currentFocusOnHandleTipLabel = NULL;
+    QLabel* currentFocusOnHandleInfoLabel = NULL;
     // 显示进程名
-    QHBoxLayout* currentFocusOnProgramNameHboxLayout = new QHBoxLayout();
-    QLabel* currentFocusOnProgramNameTipLabel = new QLabel();
-    QLabel* currentFocusOnProgramNameInfoLabel = new QLabel();
+    QHBoxLayout* currentFocusOnProgramNameHboxLayout = NULL;
+    QLabel* currentFocusOnProgramNameTipLabel = NULL;
+    QLabel* currentFocusOnProgramNameInfoLabel = NULL;
     // 显示进程进程
-    QHBoxLayout* currentFocusOnProgramPathHboxLayout = new QHBoxLayout();
-    QLabel* currentFocusOnProgramPathTipLabel = new QLabel();
-    QLineEdit* currentFocusOnProgramPathInfoLineEdit = new QLineEdit();
+    QHBoxLayout* currentFocusOnProgramPathHboxLayout = NULL;
+    QLabel* currentFocusOnProgramPathTipLabel = NULL;
+    QLineEdit* currentFocusOnProgramPathInfoLineEdit = NULL;
 
     // 程序开关
-    QHBoxLayout* appSwitchHBoxLayout = new QHBoxLayout();
-    QButtonGroup* appSwitchButtonGroup = new QButtonGroup();
-    QRadioButton* appOnRadioButton = new QRadioButton();
-    QRadioButton* appOffRadioButton = new QRadioButton();
+    QHBoxLayout* appSwitchHBoxLayout = NULL;
+    QButtonGroup* appSwitchButtonGroup = NULL;
+    QRadioButton* appOnRadioButton = NULL;
+    QRadioButton* appOffRadioButton = NULL;
 };
 
 #endif
