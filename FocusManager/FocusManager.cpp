@@ -326,6 +326,7 @@ void FocusManager::switchFocus()
         {
             // 切换回原来的句柄
             WindowsHandle::setHandleFocus(currentHandle);
+            WindowsHandle::setHandleMouseLocation(currentHandle);
         }
     }
     else
@@ -335,6 +336,7 @@ void FocusManager::switchFocus()
         {
             this->currentHandle = handle;
             WindowsHandle::setHandleFocus(lockHandle);
+            WindowsHandle::setHandleMouseLocation(lockHandle);
             this->currentFocusOnProcessIdInfoLabel->setText(QString::number(currentHandle.processId));
             this->currentFocusOnHandleInfoLabel->setText(QString::number(currentHandle.handleId));
             this->currentFocusOnProgramNameInfoLabel->setText(currentHandle.processTitle);
@@ -410,14 +412,12 @@ void FocusManager::initGUI()
     for (int i = 0; i < 10; i++)
     {
         this->lockFocusComboBox->addItem(QString(""));
-        this->lockFocusComboBox->addItem(QString("Shift+")+QString::number(i));
         this->lockFocusComboBox->addItem(QString("Alt+") + QString::number(i));
         this->lockFocusComboBox->addItem(QString("Ctrl+") + QString::number(i));
         this->lockFocusComboBox->addItem(QString("Ctrl+Shift+") + QString::number(i));
         this->lockFocusComboBox->addItem(QString("Ctrl+Alt+") + QString::number(i));
 
         this->switchFocusComboBox->addItem(QString(""));
-        this->switchFocusComboBox->addItem(QString("Shift+") + QString::number(i));
         this->switchFocusComboBox->addItem(QString("Alt+") + QString::number(i));
         this->switchFocusComboBox->addItem(QString("Ctrl+") + QString::number(i));
         this->switchFocusComboBox->addItem(QString("Ctrl+Shift+") + QString::number(i));

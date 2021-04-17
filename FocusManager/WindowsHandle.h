@@ -15,6 +15,7 @@ public:
     static HandleInfo getCurrentSystemFocus();              // 获取当前焦点信息
     static HandleInfo getHandleInfoFromHWND(HWND handle);
     static void setHandleFocus(HandleInfo handle);          // 使某个handle获取焦点
+    static bool setHandleMouseLocation(HandleInfo handleInfo);  // 使鼠标自动定位到焦点处
 };
 
 #endif
