@@ -31,4 +31,4 @@
 * 其它
 
 ## 二进制下载：
-* [windows安装包](https://github.com/oneflyingfish/FocusManager/releases/tag/V1.0.0)
+* [windows安装包](https://github.com/oneflyingfish/FocusManager/releases)
